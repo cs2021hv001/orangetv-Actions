@@ -1,0 +1,43 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Fly CLI
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          export FLYCTL_INSTALL="$HOME/.fly/bin"
+          export PATH="$FLYCTL_INSTALL:$PATH"
+
+      - name: Set Fly secrets
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          ~/.fly/bin/flyctl auth token $FLY_API_TOKEN
+          ~/.fly/bin/flyctl secrets set \
+            USERNAME=${{ secrets.USERNAME }} \
+            PASSWORD=${{ secrets.PASSWORD }} \
+            SITE_BASE=${{ secrets.SITE_BASE }} \
+            NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }} \
+            ANNOUNCEMENT=${{ secrets.ANNOUNCEMENT }} \
+            NEXT_PUBLIC_STORAGE_TYPE=${{ secrets.NEXT_PUBLIC_STORAGE_TYPE }} \
+            UPSTASH_URL=${{ secrets.UPSTASH_URL }} \
+            UPSTASH_TOKEN=${{ secrets.UPSTASH_TOKEN }} \
+            NEXT_PUBLIC_SEARCH_MAX_PAGE=${{ secrets.NEXT_PUBLIC_SEARCH_MAX_PAGE }} \
+            NEXT_PUBLIC_DOUBAN_PROXY_TYPE=${{ secrets.NEXT_PUBLIC_DOUBAN_PROXY_TYPE }} \
+            NEXT_PUBLIC_FLUID_SEARCH=${{ secrets.NEXT_PUBLIC_FLUID_SEARCH }}
+
+      - name: Deploy to Fly
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          ~/.fly/bin/flyctl deploy --config fly.toml --verbose
