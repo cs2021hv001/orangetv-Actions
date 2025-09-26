@@ -1,0 +1,24 @@
+app = "orangetv-app"
+primary_region = "sin"
+
+[build]
+  image = "ghcr.io/djteang/orangetv:latest"
+
+
+[env]
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3000
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[[vm]]
+  memory_mb = 256
+  size = "shared-cpu-1x"
