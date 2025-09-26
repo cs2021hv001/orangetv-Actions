@@ -35,36 +35,63 @@ flyctl launch --name orangetv-app --no-deploy
 
 进入 GitHub → Settings → Secrets and variables → Actions，新增以下 secrets：
 FLY_API_TOKEN	Fly.io API Token（用 flyctl auth token 获取）
+
+### FLY令牌
+```
+FLY_API_TOKEN
+```
+
+### 站长账号
 ```
 USERNAME
 ```
+
+### 站长密码
 ```
 PASSWORD
 ```
+
+### 站点 url
 ```
 SITE_BASE
 ```
+
+### 站点名称	
 ```
 NEXT_PUBLIC_SITE_NAME
 ```
+
+### 站点公告
 ```
 ANNOUNCEMENT
 ```
+
+### 播放记录/收藏的存储方式
 ```
 NEXT_PUBLIC_STORAGE_TYPE
 ```
+
+### upstash redis 连接 url
 ```
 UPSTASH_URL
 ```
+
+### upstash redis 连接 token
 ```
 UPSTASH_TOKEN
 ```
+
+### 搜索接口可拉取的最大页数
 ```
 NEXT_PUBLIC_SEARCH_MAX_PAGE
 ```
+
+### 豆瓣数据源请求方式
 ```
 NEXT_PUBLIC_DOUBAN_PROXY_TYPE
 ```
+
+### 是否开启搜索接口流式输出
 ```
 NEXT_PUBLIC_FLUID_SEARCH
 ```
