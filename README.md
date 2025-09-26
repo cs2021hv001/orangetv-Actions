@@ -2,6 +2,8 @@
 
 这是一个使用 [Fly.io](https://fly.io) 部署 **OrangeTV** 应用的模板仓库，支持自动化 GitHub Actions 部署，并通过 **Secrets** 管理敏感信息，避免凭据泄露。
 
+## 此库只支持：Upstash 存储，需要其它储存的自行修改
+
 ---
 
 ## ✨ 功能
