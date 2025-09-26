@@ -24,8 +24,10 @@
 ### 2. 创建 Fly.io 应用
 在本地安装 [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/)，并执行：
 
-```bash
+
 flyctl launch --name orangetv-app --no-deploy
+
+
 
 ---
 ### 3. 配置 GitHub Secrets
