@@ -27,6 +27,7 @@
 ```bash
 flyctl launch --name orangetv-app --no-deploy
 
+---
 ### 3. 配置 GitHub Secrets
 
 进入 GitHub → Settings → Secrets and variables → Actions，新增以下 secrets：
