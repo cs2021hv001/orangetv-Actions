@@ -1,47 +1,51 @@
-name: Deploy to Fly.io   # 工作流名字
+name: Deploy to Fly.io
 
-# 只允许手动触发
+# 手动触发
 on:
-  workflow_dispatch:      # 你需要在 GitHub → Actions 页面点击 "Run workflow" 才会运行
+  workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest   # 在 GitHub 提供的 Ubuntu Runner 上执行
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. 拉取仓库代码
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # 1️⃣ 拉取仓库代码
+      - uses: actions/checkout@v3
 
-      # 2. 安装 Fly.io CLI
+      # 2️⃣ 安装 Fly CLI
       - name: Install Fly CLI
         run: |
           curl -L https://fly.io/install.sh | sh
           export FLYCTL_INSTALL="$HOME/.fly/bin"
           export PATH="$FLYCTL_INSTALL:$PATH"
 
-      # 3. 设置 Fly.io secrets （用 GitHub Secrets 里的值写入 Fly）
-      - name: Set Fly secrets
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: |
-          ~/.fly/bin/flyctl auth token $FLY_API_TOKEN
-          ~/.fly/bin/flyctl secrets set \
-            USERNAME=${{ secrets.USERNAME }} \
-            PASSWORD=${{ secrets.PASSWORD }} \
-            SITE_BASE=${{ secrets.SITE_BASE }} \
-            NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }} \
-            ANNOUNCEMENT=${{ secrets.ANNOUNCEMENT }} \
-            NEXT_PUBLIC_STORAGE_TYPE=${{ secrets.NEXT_PUBLIC_STORAGE_TYPE }} \
-            UPSTASH_URL=${{ secrets.UPSTASH_URL }} \
-            UPSTASH_TOKEN=${{ secrets.UPSTASH_TOKEN }} \
-            NEXT_PUBLIC_SEARCH_MAX_PAGE=${{ secrets.NEXT_PUBLIC_SEARCH_MAX_PAGE }} \
-            NEXT_PUBLIC_DOUBAN_PROXY_TYPE=${{ secrets.NEXT_PUBLIC_DOUBAN_PROXY_TYPE }} \
-            NEXT_PUBLIC_FLUID_SEARCH=${{ secrets.NEXT_PUBLIC_FLUID_SEARCH }}
-
-      # 4. 部署到 Fly.io
+      # 3️⃣ 部署到 Fly
       - name: Deploy to Fly
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
+          ~/.fly/bin/flyctl auth token $FLY_API_TOKEN
           ~/.fly/bin/flyctl deploy --config fly.toml --verbose
+
+      # 4️⃣ 自动删除最早的机器（仅当机器数量 > 1）
+      - name: Remove oldest machine if more than one exists
+        if: success()  # 只有部署成功才执行
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # 自动读取 fly.toml 中的 app 名称
+          APP_NAME=$(grep '^app' fly.toml | awk -F '"' '{print $2}')
+          echo "App name: $APP_NAME"
+
+          # 获取机器数量
+          COUNT=$(~/.fly/bin/flyctl machines list -a $APP_NAME --json | jq 'length')
+          echo "Machine count: $COUNT"
+
+          # 仅当机器 >1 时删除最早的一台
+          if [ "$COUNT" -gt 1 ]; then
+            OLDEST=$(~/.fly/bin/flyctl machines list -a $APP_NAME --json | jq -r 'sort_by(.created_at) | .[0].id')
+            echo "Deleting oldest machine: $OLDEST"
+            ~/.fly/bin/flyctl machines remove -a $APP_NAME $OLDEST --force
+          else
+            echo "Only one machine exists, skipping deletion."
+          fi
