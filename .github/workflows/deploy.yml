@@ -1,23 +1,26 @@
-name: Deploy to Fly.io
+name: Deploy to Fly.io   # 工作流名字
 
+# 只允许手动触发
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:      # 你需要在 GitHub → Actions 页面点击 "Run workflow" 才会运行
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # 在 GitHub 提供的 Ubuntu Runner 上执行
 
     steps:
-      - uses: actions/checkout@v3
+      # 1. 拉取仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      # 2. 安装 Fly.io CLI
       - name: Install Fly CLI
         run: |
           curl -L https://fly.io/install.sh | sh
           export FLYCTL_INSTALL="$HOME/.fly/bin"
           export PATH="$FLYCTL_INSTALL:$PATH"
 
+      # 3. 设置 Fly.io secrets （用 GitHub Secrets 里的值写入 Fly）
       - name: Set Fly secrets
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -36,6 +39,7 @@ jobs:
             NEXT_PUBLIC_DOUBAN_PROXY_TYPE=${{ secrets.NEXT_PUBLIC_DOUBAN_PROXY_TYPE }} \
             NEXT_PUBLIC_FLUID_SEARCH=${{ secrets.NEXT_PUBLIC_FLUID_SEARCH }}
 
+      # 4. 部署到 Fly.io
       - name: Deploy to Fly
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
