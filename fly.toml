@@ -1,0 +1,29 @@
+# fly.toml
+app = "orangetv-app"
+primary_region = "sin"
+
+[build]
+  # 使用您指定的预构建镜像
+  image = "ghcr.io/djteang/orangetv:latest"
+
+# [env] 部分保持为空
+# 我们将通过 "flyctl secrets set" 命令注入所有变量
+
+[http_service]
+  internal_port = 3000  # 您指定的内部端口
+  force_https = true
+  auto_stop_machines = "stop"  # 免费层：自动停止
+  auto_start_machines = true # 免费层：自动启动
+  min_machines_running = 0   # 免费层：最少 0 台
+  
+  # 为您的应用添加健康检查
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/"  # 假设应用根目录 "/" 会响应 200 OK
+
+[[vm]]
+  memory_mb = 256
+  size = "shared-cpu-1x"
